@@ -1,28 +1,43 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <VueHead/>
+    <VueTable/>
+    <VuePopup/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import VueHead from './components/VueHead.vue'
+import VueTable from './components/VueTable.vue'
+import VuePopup from './components/VuePopup.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    VueHead,
+    VueTable,
+    VuePopup
   }
 }
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro&display=swap');
+body{
+  margin: 0px;
+  padding: 0px;
+  border: none;
+  outline: none;
+}
+body, select{
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 14px;
+  line-height: 24px;
+
+  background-color: #fbfbfb;
+  color: #3D374A;
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  margin: 2% 7%;
 }
 </style>
