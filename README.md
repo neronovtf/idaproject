@@ -1,24 +1,16 @@
 # idaproject
+this is the repository for the test task
 
-## Project setup
+## Setup and run project
 ```
+git clone https://github.com/neronovtf/idaproject.git
+
+cd idaproject
+
 npm install
-```
 
-### Compiles and hot-reloads for development
-```
 npm run serve
 ```
+This will run server available on localhost:`<assigned-port>` for local viewing
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+> Neronov Timur, april 2020
