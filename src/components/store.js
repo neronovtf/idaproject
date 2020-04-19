@@ -1,34 +1,33 @@
 import Vuex from 'vuex'
 import Vue from 'vue'
-Vue.use(Vuex)
 import * as Request from './request'
+Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     columns: [
-      { title: "Product", isActive: true, isShow: true, order: 0 }, 
-      { title: "Calories", isActive: false, isShow: true, order: 1 }, 
-      { title: "Fat", isActive: false, isShow: true, order: 2 }, 
+      { title: "Product", isActive: true, isShow: true, order: 0 },
+      { title: "Calories", isActive: false, isShow: true, order: 1 },
+      { title: "Fat", isActive: false, isShow: true, order: 2 },
       { title: "Carbs", isActive: false, isShow: true, order: 3 },
       { title: "Protein", isActive: false, isShow: true, order: 4 },
       { title: "Iron", isActive: false, isShow: true, order: 5 },
     ],
     sortFirstColumn: 'ASC',
-    countItems:{
+    countItems: {
       selectedValue: 10,
       valuesList: [
-          { name: '10' },
-          { name: '15' },
-          { name: '20' },
+        { name: '10' },
+        { name: '15' },
+        { name: '20' },
       ]
     },
-    popup:{
+    popup: {
       show: false,
       X: 0,
       Y: 0
-      // html: `<div class="timmi">{{this.$store.state.popup.text}}</div>`
     },
-    selectRowsByID:[],
+    selectRowsByID: [],
     server: {
       getData: 'connect', // 'connect', 'error', 'allow'
       errorGet: 0,
@@ -36,87 +35,68 @@ export default new Vuex.Store({
       errorDel: 0
     },
     showPage: 0,
-    showRows: [],
-    countSelectItems: 0,
-    countItemsPage: 10,
-    products: [],
+    getJson: [],
   },
-  
+  //               _   _                
+  //              | | | |               
+  //     __ _  ___| |_| |_ ___ _ __ ___ 
+  //    / _` |/ _ \ __| __/ _ \ '__/ __|
+  //   | (_| |  __/ |_| ||  __/ |  \__ \
+  //    \__, |\___|\__|\__\___|_|  |___/
+  //     __/ |                          
+  //    |___/                           
   getters: {
-    filterBooks: state => {
-      let books
-      switch (state.activeType) {
-        case 0: books = state.books; break;
-        case 1: books = state.books.filter(book => book.myBook); break;
-        case 2: books = state.books.filter(book => book.ILike); break;
-      }
-      if(state.searchText.length){
-        books = books.filter(book => {
-          const findByTitle = !!~book.title.toLowerCase().indexOf(state.searchText.toLowerCase())
-          const findByAuthor = !!~book.author.toLowerCase().indexOf(state.searchText.toLowerCase())
-          return findByTitle || findByAuthor
-        })
-      }
-      state.showBooks = books
+    getAllLength: state => {
+      return state.getJson.length
     },
-    // getRowsShow: state => {
-    //   const rowsInPage = +state.countItems.selectedValue
-    //   const numberPage = +state.showPage + 1
-    //   const Y = rowsInPage * numberPage
-    //   const X = Y - rowsInPage
-    //   return state.showRows.slice(X, Y)
-    // },
-    getLengthActiveColumn: state => {
-      // const columns = state.columns.filter(column => column.isShow);
-      return state.columns.filter(column => column.isShow).length
+    getCountRows: state => {
+      return +state.countItems.selectedValue
     },
-    getNameActiveColumns: state => {
+    getShowRows: (state, getters) => {
+      return state.getJson.slice(getters.getLeftEdge, getters.getRightEdge)
+    },
+    getLeftEdge: (state, getters) => {
+      return state.showPage * getters.getCountRows
+    },
+    getRightEdge: (state, getters) => {
+      const max = getters.getAllLength
+      if (max > 0) {
+        const rightEdge = getters.getLeftEdge + getters.getCountRows
+        return rightEdge > max ? max : rightEdge
+      }
+      else return 0
+    },
+    getActiveColumns: state => {
       return state.columns.filter(column => column.isShow)
     },
-    getColumnsOrder: state => {
-      const columns = state.columns.filter(column => column.isShow)
-      return columns.sort((a,b) => a.order > b.order ? 1 : -1)
+    getColumnsOrder: (state, getters) => {
+      return getters.getActiveColumns.sort((a, b) => a.order > b.order ? 1 : -1)
     },
-    getRowsSortByColumn: state => {
-      const rowsInPage = +state.countItems.selectedValue
-      const numberPage = +state.showPage + 1
-
-      const ColumnsBySort = state.columns.filter(column => column.isActive)
-      const nameColumnBySort = ColumnsBySort[0].title.toLowerCase()
-
-      const Y = rowsInPage * numberPage
-      const X = Y - rowsInPage
-
-      const sortRows =  state.showRows.sort((a,b) => {
-        if(state.sortFirstColumn == 'ASC'){
-          return a[nameColumnBySort] > b[nameColumnBySort] ? 1 : -1
-        }
-        else{
-          return a[nameColumnBySort] > b[nameColumnBySort] ? -1 : 1
-        }
+    sortBy(state) {
+      const columnsBySort = state.columns.filter(column => column.isActive)
+      const expression = columnsBySort[0].title.toLowerCase()
+      const asc = state.sortFirstColumn == 'ASC'
+      state.getJson.sort((a, b) => {
+        let value = a[expression] > b[expression]
+        return asc === value ? 1 : -1
       })
-
-      return sortRows.slice(X, Y)
     },
-    getStatusRow: state => typeSort => {
-      console.log(state);
-      console.log(typeSort);
-    },
-    getWtf: state => {
-      console.log('getWtf');
-      
-      console.log(state);
-      
-    }
   },
-  
+  //                    _        _   _                 
+  //                   | |      | | (_)                
+  //    _ __ ___  _   _| |_ __ _| |_ _  ___  _ __  ___ 
+  //   | '_ ` _ \| | | | __/ _` | __| |/ _ \| '_ \/ __|
+  //   | | | | | | |_| | || (_| | |_| | (_) | | | \__ \
+  //   |_| |_| |_|\__,_|\__\__,_|\__|_|\___/|_| |_|___/
+  //                                                   
+  //                                                                                                                    
   mutations: {
-    runServer(state){
+    runServer(state) {
       Request.getProducts().then(
         data => {
           state.server.getData = 'allow'
           state.server.errorGet = 0
-          state.showRows = data
+          state.getJson = data
         },
         error => {
           console.log(error.error);
@@ -125,100 +105,67 @@ export default new Vuex.Store({
         }
       )
     },
-    setOrderColumns(state, nameFirstColumn){
-      let index = 0
-      state.columns.forEach(function(column) {
-        if(column.title == nameFirstColumn){
-          column.order = 0;
-          column.isActive = true
-        }
-        else{
-          column.order = ++index
-          column.isActive = false
-        }
-      });
+    resetSelection(state) {
+      state.selectRowsByID = []
     },
-    selectShowRows(state){
-      if(state.selectRowsByID.length != state.countItems.selectedValue){
-        const rowsInPage = +state.countItems.selectedValue
-        const numberPage = +state.showPage + 1
-        const Y = rowsInPage * numberPage
-        const X = Y - rowsInPage
-        const rows = state.showRows.slice(X, Y)
-  
-        state.selectRowsByID = []
-        rows.forEach(function(row) {
-          state.selectRowsByID.push(row.id)
-        })
-      }
-      else{
-        state.selectRowsByID = []
-      }
-    },
-    setPosition(state, elem){
+    setPosition(state, elem) {
       const target = elem.target.getBoundingClientRect()
       const width = target.width
       const left = target.left
       const allWidth = window.innerWidth
       const rightEdge = left + width + 125
-      const halfWidth = Math.round(width/2)
+      const halfWidth = Math.round(width / 2)
       const X = target.top + target.height + 10
       let Y = left + halfWidth - 125
-      if(Y < 0) Y = left
-      if(rightEdge > allWidth) Y = Y + halfWidth - 125
+      if (Y < 0) Y = left
+      if (rightEdge > allWidth) Y = Y + halfWidth - 125
       state.popup.X = X
       state.popup.Y = Y
       state.popup.show = true
     },
-    addRowInSelect(state, arg){
-      const idRow = arg.id
-      const index = state.selectRowsByID.indexOf(idRow)
-      let isDelete 
-      switch (arg.option) {
-        case 'all-add': isDelete = false; break;
-        default: isDelete = true; break;
-      }
-      
-      if(index == -1){
+    anywayAddIdInSelect(state, idRow) {
+      if (!~state.selectRowsByID.indexOf(idRow)) {
         state.selectRowsByID.push(idRow)
       }
-      else{
-        if(isDelete){
-          state.selectRowsByID.splice(index, 1)
-        }
+    },
+    addRowInSelect(state, idRow) {
+      const index = state.selectRowsByID.indexOf(idRow)
+      if (!~index) {
+        state.selectRowsByID.push(idRow)
       }
-      
+      else {
+        state.selectRowsByID.splice(index, 1)
+      }
     },
   },
-
+  //               _   _                 
+  //              | | (_)                
+  //     __ _  ___| |_ _  ___  _ __  ___ 
+  //    / _` |/ __| __| |/ _ \| '_ \/ __|
+  //   | (_| | (__| |_| | (_) | | | \__ \
+  //    \__,_|\___|\__|_|\___/|_| |_|___/
+  //                                     
+  //                                     
   actions: {
-    deleteSelectRows(global){
+    deleteSelectRows(global) {
       const state = global.state
-      
       Request.deleteProducts().then(
         data => {
-            console.log(data.message);
-            state.server.errorDel = 0
-            global.dispatch('realDelete')
+          console.log(data.message);
+          state.server.errorDel = 0
+          global.dispatch('realDelete')
         },
         error => {
-            console.log(error.error);
-            ++state.server.errorDel
-            state.server.delete = 'error'
+          console.log(error.error);
+          ++state.server.errorDel
+          state.server.delete = 'error'
         }
       )
     },
-    realDelete(global){
+    realDelete(global) {
       const state = global.state
-      let idRows = state.selectRowsByID
-      console.log('1. '+state.showRows.length);   
-      console.log(idRows.length);
-         
-      state.showRows = state.showRows.filter(item => !~idRows.indexOf(item.id))
-
-      console.log('2. '+state.showRows.length);      
       state.server.showPage = 0
-      global.getters.getRowsSortByColumn
+      state.getJson = state.getJson.filter(item => !~state.selectRowsByID.indexOf(item.id))
       state.server.delete = 'allow'
       state.popup.show = false
       state.selectRowsByID = []
